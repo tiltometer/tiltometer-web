@@ -50,12 +50,15 @@ var x = setInterval(function() {
     document.getElementById("demo").innerHTML = "It is Poker Thursday";
   }
 }, 1000);
-    
-  jQuery.ajax({
-    url: "https://www.pokernow.club/games/L-01GwQGF0Szxsq-Eo9j_A7aT/log?after_at=&before_at=&mm=true"
-  }).done(function(results) {
-    document.getElementById("log").innerHTML = results;
-  });
+  </script>
+  <script>
+    $(document).ready(function(){
+      $.ajax({
+        url: "https://www.pokernow.club/games/L-01GwQGF0Szxsq-Eo9j_A7aT/log?after_at=&before_at=&mm=true"
+      }).done(function(results) {
+        document.getElementById("log").innerHTML = results;
+      });
+    });  
       
 </script>
 </body>
