@@ -56,6 +56,7 @@ var x = setInterval(function() {
       $.ajax({
         url: "https://www.pokernow.club/games/L-01GwQGF0Szxsq-Eo9j_A7aT/log?after_at=&before_at=&mm=true",
         crossDomain: true,
+        dataType: "jsonp"
       }).done(function(results) {
         document.getElementById("log").innerHTML = results;
       });
