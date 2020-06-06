@@ -53,10 +53,16 @@ var x = setInterval(function() {
   </script>
   <script>
     $(document).ready(function(){
+      
+      $.ajaxPrefilter(function(options) {
+    if (options.crossDomain && jQuery.support.cors) {
+        options.url = 'https://cors-anywhere.herokuapp.com/' + options.url;
+      }
+    });
       $.ajax({
         url: "https://www.pokernow.club/games/L-01GwQGF0Szxsq-Eo9j_A7aT/log?after_at=&before_at=&mm=true",
         crossDomain: true,
-        dataType: "jsonp"
+        dataType: "json"
       }).done(function(results) {
         document.getElementById("log").innerHTML = results;
       });
