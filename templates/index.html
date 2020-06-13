@@ -16,7 +16,16 @@
     <p><strong>Where will the tiltometer end up next??</strong></p>
     <p>Time till next Poker Thursday:</p>
     <p id="demo"></p>
-
+    {% if leaderboard %}
+    <h2>Current leaderboard</h2>
+    <ol>
+      <li>{{ leaderboard.one }}</li>
+      <li>{{ leaderboard.two }}</li>
+      <li>{{ leaderboard.three }}</li>
+      <li>{{ leaderboard.four }}</li>
+      <li>{{ leaderboard.five }}</li>
+    </ol>
+    {% endif %}
   </main>
   </div>
 

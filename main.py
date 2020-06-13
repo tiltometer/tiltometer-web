@@ -40,6 +40,13 @@ class TiltForm(FlaskForm):
     message = StringField('message', validators=[DataRequired()])
     name = StringField('name', validators=[DataRequired()])
 
+class LeaderboardForm(FlaskForm):
+    one = StringField('First place', validators=[DataRequired()])
+    two = StringField('Second place', validators=[DataRequired()])
+    three = StringField('Third place', validators=[DataRequired()])
+    four = StringField('Fourth place', validators=[DataRequired()])
+    five = StringField('Fifth place', validators=[DataRequired()])
+
 def log():
     url = app.config.url
     cookies = dict(npt=app.config.cookie)
@@ -63,8 +70,13 @@ def root():
     else:
         next_thursday = now + datetime.timedelta((3 - now.weekday())%7)
         next_thursday_string = next_thursday.strftime('%b %d, %Y 19:30:00')
-        tilt_ref = db.collection(u'tilt').document(u'active').get()
-        return render_template('index.html', next_thursday=next_thursday_string)
+        
+        leader_ref = db.collection(u'game').document(u'leaderboard').get()
+        if leader_ref.exists:
+            leaderboard = leader_ref.to_dict()
+        else:
+            leaderboard = None
+        return render_template('index.html', next_thursday=next_thursday_string, leaderboard=leaderboard)
     return render_template('index.html')
 
 
@@ -111,6 +123,27 @@ def start():
     return render_template('admin-start.html', form=form)
 
 
+@app.route('/admin/1234567890/leader', methods=('GET', 'POST'))
+def leader():
+    form = LeaderboardForm()
+    if form.validate_on_submit():
+        one = form.one.data
+        two = form.one.data
+        three = form.one.data
+        four = form.one.data
+        five = form.one.data
+
+        leader_ref = db.collection(u'game').document(u'leaderboard')
+        leader_ref.set({
+            u'one': one,
+            u'two': two,
+            u'three': three,
+            u'four': four,
+            u'five': five,
+        })
+
+        return redirect('/')
+    return render_template('admin-leader.html', form=form)
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App

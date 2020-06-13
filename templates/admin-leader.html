@@ -1,0 +1,10 @@
+<form method="POST" enctype="multipart/form-data" action="/admin/1234567890/leader">
+    {{ form.csrf_token }}
+<p>{{ form.one.label }} {{ form.one }}</p>
+<p>{{ form.two.label }} {{ form.two }}</p>
+<p>{{ form.three.label }} {{ form.three }}</p>
+<p>{{ form.four.label }} {{ form.four }}</p>
+<p>{{ form.five.label }} {{ form.five }}</p>
+
+<input type="submit" value="Go">
+</form>
