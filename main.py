@@ -128,10 +128,10 @@ def leader():
     form = LeaderboardForm()
     if form.validate_on_submit():
         one = form.one.data
-        two = form.one.data
-        three = form.one.data
-        four = form.one.data
-        five = form.one.data
+        two = form.two.data
+        three = form.three.data
+        four = form.four.data
+        five = form.five.data
 
         leader_ref = db.collection(u'game').document(u'leaderboard')
         leader_ref.set({
