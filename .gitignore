@@ -1,0 +1,8 @@
+bin/
+include/
+lib/
+testing-key.json
+pip-selfcheck.json
+.DS_Store
+.Python
+.gcloudignore

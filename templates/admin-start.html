@@ -1,0 +1,6 @@
+<form method="POST" action="/admin/1234567890/start">
+    {{ form.csrf_token }}
+    {{ form.url.label }} {{ form.url(size=256) }}
+    {{ form.cookie.label }} {{ form.cookie(size=256) }}
+    <input type="submit" value="Go">
+</form>

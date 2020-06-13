@@ -1,0 +1,7 @@
+<form method="POST" enctype="multipart/form-data" action="/admin/1234567890/upload">
+        {{ form.csrf_token }}
+    <p>{{ form.photo.label }} {{ form.photo }}</p>
+    <p>{{ form.message.label }} {{ form.message(size=256) }}</p>
+    <p>{{ form.name.label }} {{ form.name(size=256) }}</p>
+    <input type="submit" value="Go">
+</form>
