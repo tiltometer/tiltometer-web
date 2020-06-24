@@ -60,13 +60,13 @@ def root():
     # For the sake of example, use static information to inflate the template.
     # This will be replaced with real information in later steps.
     now = datetime.datetime.utcnow()
-    if (now.weekday() == 3 and now.hour >= 23 and now.minute >= 30) or (now.weekday() == 4 and now.hour <= 6):
+    if ((now.weekday() == 3 and now.hour >= 23 and now.minute >= 30) or (now.weekday() == 4 and now.hour <= 6)):
         tilt_ref = db.collection(u'tilt').document(u'active').get()
         if tilt_ref.exists:
             tilt = tilt_ref.to_dict()
         else:
             tilt = None
-        return render_template('index.html', tilt=tilt)
+        return render_template('index-live.html', tilt=tilt)
     else:
         next_thursday = now + datetime.timedelta((3 - now.weekday())%7)
         next_thursday_string = next_thursday.strftime('%b %d, %Y 19:30:00')
@@ -90,7 +90,7 @@ def upload_tilt():
         filename = secure_filename(f.filename)
         message = form.message.data
         name = form.name.data
-        filepath = 'https://storage.cloud.google.com/{}/{}'.format(bucket_name, filename)
+        filepath = 'https://storage.googleapis.com/{}/{}'.format(bucket_name, filename)
         storage_client = storage.Client()
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(filename)
