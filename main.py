@@ -60,7 +60,7 @@ def root():
     # For the sake of example, use static information to inflate the template.
     # This will be replaced with real information in later steps.
     now = datetime.datetime.utcnow()
-    if (now.weekday() == 3 and now.hour >= 23 and now.minute >= 30) or (now.weekday() == 4 and now.hour <= 6):
+    if True or (now.weekday() == 3 and now.hour >= 23 and now.minute >= 30) or (now.weekday() == 4 and now.hour <= 6):
         tilt_ref = db.collection(u'tilt').document(u'active').get()
         if tilt_ref.exists:
             tilt = tilt_ref.to_dict()
