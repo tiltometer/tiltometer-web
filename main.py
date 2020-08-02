@@ -15,30 +15,31 @@
 # [START gae_python37_render_template]
 import datetime
 import requests
-from flask import Flask, render_template, redirect, request, jsonify
+from flask import Flask, render_template, redirect, request, make_response
 from flask_wtf import FlaskForm
 from wtforms import StringField
 from wtforms.validators import DataRequired
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from werkzeug.utils import secure_filename
-import uuid
 from google.cloud import storage
 from google.cloud import firestore
-import os
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"Fsdadfnosa4Q8z\n\xec]/'
 bucket_name = 'rapid-spider-280019.appspot.com'
 db = firestore.Client()
 
+
 class StartForm(FlaskForm):
     url = StringField('url', validators=[DataRequired()])
     cookie = StringField('cookie', validators=[DataRequired()])
 
+
 class TiltForm(FlaskForm):
-    photo = FileField(validators=[FileRequired(), FileAllowed(['jpg','png'], 'Images only!')])
+    photo = FileField(validators=[FileRequired(), FileAllowed(['jpg', 'png'], 'Images only!')])
     message = StringField('message', validators=[DataRequired()])
     name = StringField('name', validators=[DataRequired()])
+
 
 class LeaderboardForm(FlaskForm):
     one = StringField('First place', validators=[DataRequired()])
@@ -47,6 +48,7 @@ class LeaderboardForm(FlaskForm):
     four = StringField('Fourth place', validators=[DataRequired()])
     five = StringField('Fifth place', validators=[DataRequired()])
 
+
 def log():
     url = app.config.url
     cookies = dict(npt=app.config.cookie)
@@ -54,6 +56,7 @@ def log():
     if res.status_code != 200:
         pass
     return res.json()
+
 
 @app.route('/')
 def root():
@@ -68,9 +71,9 @@ def root():
             tilt = None
         return render_template('index-live.html', tilt=tilt)
     else:
-        next_thursday = now + datetime.timedelta((3 - now.weekday())%7)
+        next_thursday = now + datetime.timedelta((3 - now.weekday()) % 7)
         next_thursday_string = next_thursday.strftime('%b %d, %Y 19:30:00')
-        
+
         leader_ref = db.collection(u'game').document(u'leaderboard').get()
         if leader_ref.exists:
             leaderboard = leader_ref.to_dict()
@@ -80,7 +83,69 @@ def root():
     return render_template('index.html')
 
 
+@app.route('/stats', methods=('GET',))
+def stats():
+    sessions = {}
+    doc_ref = db.collection(u'stats')
+    for doc in doc_ref.stream():
+        sessions[doc.id] = doc.to_dict()
+    return render_template('stats.html', sessions=sessions)
 
+
+@app.route('/stats_lifetime', methods=('GET', ))
+def stats_lifetime():
+    lifetime_stats = {}
+    doc_ref = db.collection(u'stats')
+    for doc in doc_ref.stream():
+        doc = doc.to_dict()
+        players = doc.get('players')
+        for player in players:
+            player_name = player.get('player_name')
+            if player_name in lifetime_stats.keys():
+                lifetime_stats.get(player_name).append(player)
+            else:
+                lifetime_stats[player_name] = [player]
+
+    res = []
+    for player, stats in lifetime_stats.items():
+        combined = {k: sum([d.get(k) for d in stats]) for k in set().union(*stats) if k != 'player_name'}
+        res.append({
+            'player_name': player,
+            'num_hands': combined.get('num_hands'),
+            'hands_won': combined.get('hands_won'),
+            'vpip': combined.get('vpip') / combined.get('pfr_opp') * 100,
+            'pfr': combined.get('pfr') / combined.get('pfr_opp') * 100,
+            'pf_3bet': 0 if combined.get('pf_3bet_opp') == 0 else combined.get('pf_3bet') / combined.get('pf_3bet_opp') * 100,
+            'cbet': 0 if combined.get('cbet_flop_opp') == 0 else combined.get('cbet_flop') / combined.get('cbet_flop_opp') * 100,
+            'f_cbet': 0 if combined.get('cbet_flop_fold_opp') == 0 else combined.get('cbet_flop_fold') / combined.get('cbet_flop_fold_opp') * 100
+        })
+    return render_template('lifetime_stats.html', stats=res)
+
+        
+    
+@app.route('/stats_session', methods=('GET',))
+def stats_session():
+    session = request.args.get('session')
+    doc_ref = db.collection(u'stats').document(session).get()
+    if doc_ref.exists:
+        session_stats = doc_ref.to_dict()
+    else:
+        return make_response(('Bad request', '400'))
+
+    player_stats = [
+        {
+            'player_name': p.get('player_name'),
+            'num_hands': p.get('num_hands'),
+            'hands_won': p.get('hands_won'),
+            'vpip': p.get('vpip') / p.get('pfr_opp') * 100,
+            'pfr': p.get('pfr') / p.get('pfr_opp') * 100,
+            'pf_3bet': 0 if p.get('pf_3bet_opp') == 0 else p.get('pf_3bet') / p.get('pf_3bet_opp') * 100,
+            'cbet': 0 if p.get('cbet_flop_opp') == 0 else p.get('cbet_flop') / p.get('cbet_flop_opp') * 100,
+            'f_cbet': 0 if p.get('cbet_flop_fold_opp') == 0 else p.get('cbet_flop_fold') / p.get('cbet_flop_fold_opp') * 100
+        }
+        for p in session_stats.get('players')
+    ]
+    return render_template('session_stats.html', stats=player_stats, num_hands=session_stats.get('num_hands'), date=session_stats.get('date'))
 
 @app.route("/admin/1234567890/upload", methods=('GET', 'POST'))
 def upload_tilt():
@@ -102,9 +167,10 @@ def upload_tilt():
             u'message': message,
             u'name': name
         })
-        
+
         return redirect('/')
     return render_template('admin-tilt.html', form=form)
+
 
 @app.route('/admin/1234567890/start', methods=('GET', 'POST'))
 def start():
@@ -144,6 +210,7 @@ def leader():
 
         return redirect('/')
     return render_template('admin-leader.html', form=form)
+
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
